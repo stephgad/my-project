@@ -1,0 +1,106 @@
+---
+title: "gapminder analysis with dplyr"
+author: "Steph Gad"
+date: "April 16, 2016"
+output: html_document
+---
+
+#First Header
+##Second Header
+
+
+```{r}
+## install.packages("dplyr") #do this only once!
+library(dplyr) #do this everytime I restart R and need dplyr!
+
+```
+
+##Load Gapminder
+
+```{r, echo=FALSE}
+## install.packages("gapminder")
+library(gapminder)
+str(gapminder)
+
+```
+
+##Exploration with gapminder
+
+```{r}
+filter(gapminder, lifeExp <29)
+filter(gapminder, country == "Rwanda")
+
+a <- filter(gapminder, country %in% c("Rwanda", "Afghanistan"))
+
+#copare with dplyr
+gapminder[gapminder$lifeExp < 29, ]
+
+subset(gapminder, country == "Rwanda")
+
+#pipe operator %>%
+#%>% #shift/command/M
+#from magrittr package
+
+gapminder %>% head
+head(gapminder)#same as 
+
+gapminder %>% head(3) #gapminder THEN OPERATOR (takes whats on the left and passes it in as whatever is on the right as the first argument) head with 3 rows 
+head(gapminder, 3) #same as 
+
+##subset with command select
+select(gapminder, year, lifeExp)#great but!
+gapminder %>% select(year, lifeExp)
+
+
+gapminder %>% 
+  select(year, lifeExp) %>% 
+  head(4)
+
+#mean gdp of Cambodia
+gapminder %>% 
+  filter(country == "Cambodia") %>% 
+  #select(country, year, pop, gdpPercap)
+  select(-continent, -lifeExp) #will give you the same thing by selecting nots
+
+#compare what this would look like in base R
+gapminder[gapminder$country == "Cambodia", c("country", "year", "gdpPercap")]
+
+#continue with mutate
+gapminder %>% 
+  mutate(gdp = pop*gdpPercap) 
+
+#excercise add mutate function to previous analysis 
+
+gapminder %>% 
+  filter(country == "Cambodia") %>% 
+  select(-continent, -lifeExp) %>% 
+  mutate(gdp = pop*gdpPercap)
+
+#isolate mean gdp
+gapminder %>% 
+  filter(country == "Cambodia") %>% 
+  select(-continent, -lifeExp) %>% 
+  mutate(gdp = pop*gdpPercap) %>% 
+  group_by(country) %>% 
+  summarise(mean_gdp = mean(gdp)) %>% 
+  ungroup() #do this if you group_by 
+
+## with a loop
+# for(country in all_countries){
+#   our analysis
+# }
+
+#to do for every country #comment out filter country 
+gapminder %>% 
+  #filter(country == "Cambodia") %>% 
+  select(-continent, -lifeExp) %>% 
+  mutate(gdp = pop*gdpPercap) %>% 
+  group_by(country) %>% 
+  summarise(mean_gdp = mean(gdp)) %>% 
+  ungroup() 
+
+## install.packages("tidyr")
+library(tidyr)
+
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
