@@ -62,3 +62,57 @@ s
 
 ```
 
+## Interactive 
+
+```{r}
+install.packages("plotly")
+library(plotly) # install.packages('plotly')
+
+# scatterplot (Note: key=country shows up on rollover)
+s = ggplot(g, aes(x=gdpPercap, y=lifeExp, key=country)) +
+  geom_point()
+ggplotly(s)
+
+```
+
+## static maps
+```{r}
+install.packages(tmap)
+library(tmap) # install.packages('tmap')
+
+# load world spatial polygons
+data(World)
+
+# inspect values in World
+World@data %>% tbl_df()
+
+# gapminder countries not in World. skipping for now
+g %>% 
+  anti_join(World@data, by=c('country'='name')) %>% #rows that don't match
+  arrange(desc(pop))
+
+# World countries not in gapminder. skipping for now
+World@data %>% 
+  anti_join(g, by=c('name'='country')) %>% 
+  arrange(desc(pop_est)) %>%
+  select(iso_a3, name, pop_est)
+
+# join gapminder data to World
+World@data = World@data %>%
+  left_join(g, by=c('name'='country')) #combines data sets 
+```
+
+
+```{r}
+# make map
+m = tm_shape(World) +
+    tm_polygons('lifeExp', palette='RdYlGn', id='name', title='Life expectancy (years)', auto.palette.mapping=F) +
+    tm_style_gray() + tm_format_World()
+m
+
+# show interactive map
+tmap_leaflet(m)
+```
+
+
+
